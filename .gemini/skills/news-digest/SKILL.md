@@ -57,7 +57,7 @@ WebSearch: "world news headlines [yesterday's date]"
 
 ### Step 4: Discordに投稿
 
-`run_shell_command` ツールを使って、`scripts/discord_post.py`スクリプトを実行し、標準入力からメッセージを渡す（`DISCORD_WEBHOOK_URL` が設定されていること）。
+`run_shell_command` ツールを使って、`scripts/discord_post.py`スクリプトを実行し、標準入力からメッセージを渡す
 
 ```bash
 python scripts/discord_post.py <<EOF
