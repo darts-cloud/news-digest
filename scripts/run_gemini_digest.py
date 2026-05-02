@@ -28,12 +28,12 @@ def main() -> int:
         return 1
 
     prompt = build_prompt()
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash"
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite").strip() or "gemini-2.5-flash"
 
     cmd = [
         gemini_bin,
         "-p",
-        prompt,
+        "/news-digest 'ホロライブ'",
         "-y",
         "--output-format",
         "json",

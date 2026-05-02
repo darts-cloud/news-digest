@@ -1,0 +1,120 @@
+# google-github-actions/run-gemini-cli を使って news-digest を実行する版。
+# 既存の news-digest.yml（npm 直インストール + run_gemini_digest.py）とは別ジョブ定義。
+#
+# 必要な Secrets:
+#   GEMINI_API_KEY … Google AI Studio の API キー
+#   DISCORD_WEBHOOK_URL … Discord の Incoming Webhook URL
+#
+# 任意の Variables（リポジトリ Settings → Variables）:
+#   GEMINI_MODEL … 省略時は CLI / GEMINI_MODEL 環境の既定
+#   GEMINI_CLI_VERSION … 省略時は latest（Action の既定）
+#   GEMINI_DEBUG … true でデバッグ（ログに注意）
+#   UPLOAD_GEMINI_ARTIFACTS … true で gemini-artifacts を Artifact 保存
+
+name: News digest (Gemini CLI Action)
+
+on:
+  schedule:
+    - cron: "30 23 * * *"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "トピック（空なら主要ニュース全般）"
+        required: false
+        default: "Claude Code Gemini OpenAI Codex Cursor"
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GEMINI_CLI_TRUST_WORKSPACE: "true"
+  NO_COLOR: "1"
+
+concurrency:
+  group: news-digest-gemini-action-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies (Discord のみ)
+        run: pip install requests
+
+      - name: Prepare Gemini context
+        env:
+          REPOSITORY: ${{ github.repository }}
+          TOPIC: ${{ github.event.inputs && github.event.inputs.topic || '' }}
+          RUN_ID: ${{ github.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          mkdir -p .gemini
+          jq -n \
+            --arg repo "$REPOSITORY" \
+            --arg topic "$TOPIC" \
+            --arg run "$RUN_ID" \
+            --arg ev "$EVENT_NAME" \
+            '{
+              repository: $repo,
+              topic: (if $topic == "" then null else $topic end),
+              workflow_run_id: $run,
+              event: $ev
+            }' > .gemini/context.json
+
+      - name: Build prompt for Gemini
+        id: prompt
+        env:
+          NEWS_DIGEST_TOPIC: ${{ github.event.inputs && github.event.inputs.topic || '' }}
+        run: |
+          {
+            echo 'text<<EOF'
+            python scripts/build_gemini_prompt.py
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Gemini CLI
+        id: gemini
+        uses: google-github-actions/run-gemini-cli@v0.1.22
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          use_vertex_ai: "false"
+          use_gemini_code_assist: "false"
+          gemini_cli_version: ${{ vars.GEMINI_CLI_VERSION || 'latest' }}
+          gemini_model: ${{ vars.GEMINI_MODEL }}
+          gemini_debug: ${{ vars.GEMINI_DEBUG == 'true' && 'true' || 'false' }}
+          workflow_name: news-digest-gemini-action
+          github_pr_number: ""
+          github_issue_number: ""
+          prompt: ${{ steps.prompt.outputs.text }}
+          upload_artifacts: ${{ vars.UPLOAD_GEMINI_ARTIFACTS == 'true' && 'true' || 'false' }}
+          settings: |-
+            {
+              "model": {
+                "maxSessionTurns": 25
+              }
+            }
+
+      - name: Save digest to file
+        env:
+          DIGEST: ${{ steps.gemini.outputs.summary }}
+        run: |
+          printf '%s' "$DIGEST" > digest.txt
+          test -s digest.txt
+
+      - name: Post to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python scripts/discord_post.py digest.txt

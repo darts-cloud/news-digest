@@ -15,13 +15,13 @@ name: News digest (Gemini CLI Action)
 
 on:
   schedule:
-    - cron: "30 22 * * *"
+    - cron: "30 23 * * *"
   workflow_dispatch:
     inputs:
       topic:
         description: "トピック（空なら主要ニュース全般）"
         required: false
-        default: ""
+        default: "イラン情勢"
 
 defaults:
   run:
