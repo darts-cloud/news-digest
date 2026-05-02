@@ -16,6 +16,5 @@ gemini news-digest "[トピック]"
 
 | 変数名 | 説明 |
 | --- | --- |
-| `NEWS_DIGEST_TOPIC` | ニュースダイジェストのトピック |
 | `GEMINI_MODEL` | Geminiモデル名 |
 

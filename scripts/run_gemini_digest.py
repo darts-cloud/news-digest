@@ -13,9 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from build_gemini_prompt import build_prompt
-
-
 def main() -> int:
     out_path = Path(sys.argv[1] if len(sys.argv) > 1 else "gemini-out.json")
     if not os.environ.get("GEMINI_API_KEY") and not os.environ.get("GOOGLE_API_KEY"):
@@ -27,7 +24,6 @@ def main() -> int:
         print("gemini コマンドが見つかりません。npm install -g @google/gemini-cli を実行してください。", file=sys.stderr)
         return 1
 
-    prompt = build_prompt()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite").strip() or "gemini-2.5-flash"
 
     topic = os.environ.get("NEWS_DIGEST_TOPIC", "").strip()
