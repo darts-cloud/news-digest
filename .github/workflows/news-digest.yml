@@ -1,16 +1,16 @@
 # news-digest スキルに沿ったプロンプトで Gemini CLI（ヘッドレス）を実行し、Discord Webhook へ投稿する。
 # 要 Secrets: GEMINI_API_KEY（Google AI Studio）、DISCORD_WEBHOOK_URL
-name: News digest to Discord
+name: News digest(SKILL.md版)
 
 on:
   schedule:
-    - cron: "30 22 * * *"
+    - cron: "40 23 * * *"
   workflow_dispatch:
     inputs:
       topic:
         description: "トピック（空なら主要ニュース全般）"
         required: false
-        default: ""
+        default: "にじさんじ"
 
 env:
   GEMINI_CLI_TRUST_WORKSPACE: "true"
