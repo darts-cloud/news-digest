@@ -28,10 +28,6 @@ origin: local
 - スケジュールされた自動通知
 - `/news-digest` コマンドが呼ばれたとき
 
-## Target Channel
-
-- Discord chat_id: `1482067433354297508`
-
 ## Workflow
 
 ### Step 1: 日付を確認
@@ -61,11 +57,28 @@ WebSearch: "world news headlines [yesterday's date]"
 
 ### Step 4: Discordに投稿
 
-`run_shell_command` ツールを使って、`send_discord_message.py`スクリプトを実行し、以下の形式で投稿：
+`run_shell_command` ツールを使って、`scripts/discord_post.py`スクリプトを実行し、標準入力からメッセージを渡す（`DISCORD_WEBHOOK_URL` が設定されていること）。
 
 ```bash
-source /home/naoki/geminicli/discord/venv/bin/activate && \
-python /home/naoki/geminicli/discord/send_discord_message.py 1482067433354297508 $'提督、おはようございますわ♪ くまりんこ朝の情報をお届けしますね！\n\n## [日付]の[トピック]まとめ\n\n### 📌 [見出し1]\n[内容]\n\n### 📌 [見出し2]\n[内容]\n\n（続く場合は追加）\n\n📰 ソース\n・[タイトル](URL)\n・[タイトル](URL)\n\n三隈からの報告でしたわ。くまりんこ♪'
+python scripts/discord_post.py <<EOF
+提督、おはようございますわ♪ くまりんこ朝の情報をお届けしますね！
+
+## [日付]の[トピック]まとめ
+
+### 📌 [見出し1]
+[内容]
+
+### 📌 [見出し2]
+[内容]
+
+（続く場合は追加）
+
+📰 ソース
+・[タイトル](URL)
+・[タイトル](URL)
+
+三隈からの報告でしたわ。くまりんこ♪
+EOF
 ```
 
 ## Notes

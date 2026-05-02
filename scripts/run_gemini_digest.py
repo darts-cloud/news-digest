@@ -30,10 +30,13 @@ def main() -> int:
     prompt = build_prompt()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite").strip() or "gemini-2.5-flash"
 
+    topic = os.environ.get("NEWS_DIGEST_TOPIC", "").strip()
+    prompt_cmd = f"/news-digest '{topic}'" if topic else "/news-digest"
+
     cmd = [
         gemini_bin,
         "-p",
-        "/news-digest 'ホロライブ'",
+        prompt_cmd,
         "-y",
         "--output-format",
         "json",
