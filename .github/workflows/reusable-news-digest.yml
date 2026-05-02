@@ -1,0 +1,59 @@
+name: (Reusable) News Digest
+
+on:
+  workflow_call:
+    inputs:
+      topic:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+
+env:
+  GEMINI_CLI_TRUST_WORKSPACE: "true"
+  NO_COLOR: "1"
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Gemini CLI
+        run: npm install -g @google/gemini-cli
+
+      - name: Run Gemini CLI (headless) and write digest
+        id: gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NEWS_DIGEST_TOPIC: ${{ inputs.topic }}
+          NO_COLOR: "1"
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: python scripts/run_gemini_digest.py gemini-out.json
+
+      - name: Show Digest
+        run: |
+          echo "## News Digest: ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat digest.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Post to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python scripts/discord_post.py digest.txt

@@ -1,6 +1,4 @@
-# news-digest スキルに沿ったプロンプトで Gemini CLI（ヘッドレス）を実行し、Discord Webhook へ投稿する。
-# 要 Secrets: GEMINI_API_KEY（Google AI Studio）、DISCORD_WEBHOOK_URL
-name: News digest(SKILL.md版)
+name: News digest (イラン情勢)
 
 on:
   schedule:
@@ -8,54 +6,14 @@ on:
   workflow_dispatch:
     inputs:
       topic:
-        description: "トピック（空なら主要ニュース全般）"
+        description: "トピック"
         required: false
         default: "イラン情勢"
 
-env:
-  GEMINI_CLI_TRUST_WORKSPACE: "true"
-  NO_COLOR: "1"
-  PYTHON_VERSION: "3.12"
-  NODE_VERSION: "22"
-
 jobs:
-  digest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
-
-      - name: Install Gemini CLI
-        run: npm install -g @google/gemini-cli
-
-      - name: Run Gemini CLI (headless) and write digest
-        id: gemini
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          NEWS_DIGEST_TOPIC: ${{ github.event.inputs && github.event.inputs.topic || '' }}
-          NO_COLOR: "1"
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-        run: python scripts/run_gemini_digest.py gemini-out.json
-
-      - name: Show Digest
-        run: |
-          echo "## News Digest" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          cat digest.txt >> $GITHUB_STEP_SUMMARY
-
-      - name: Post to Discord
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python scripts/discord_post.py digest.txt
+  run-digest:
+    uses: ./.github/workflows/reusable-news-digest.yml
+    with:
+      name: "イラン情勢"
+      topic: ${{ github.event.inputs.topic || 'イラン情勢' }}
+    secrets: inherit
