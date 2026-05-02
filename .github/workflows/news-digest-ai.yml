@@ -11,7 +11,7 @@
 #   GEMINI_DEBUG … true でデバッグ（ログに注意）
 #   UPLOAD_GEMINI_ARTIFACTS … true で gemini-artifacts を Artifact 保存
 
-name: News digest (Gemini CLI Action)
+name: News digest (AI関連)
 
 on:
   schedule:
