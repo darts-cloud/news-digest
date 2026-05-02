@@ -116,6 +116,7 @@ jobs:
 
       - name: Show Digest
         run: |
+          test -s digest.txt
           cat digest.txt
           echo "## News Digest" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

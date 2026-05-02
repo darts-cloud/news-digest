@@ -1,12 +1,12 @@
 ---
 name: news-digest
-description: 指定したトピックの前日ニュースをWebSearchで取得し、Discordチャンネルに日本語で投稿するスキル。毎朝の定期通知や手動実行に使用。引数でトピックを指定する。
+description: 指定したトピックの前日ニュースをWebSearchで取得し、フォーマットに合わせて文字列を返す。引数でトピックを指定する。
 origin: local
 ---
 
 # ニュースダイジェスト通知
 
-指定トピックの前日ニュースを調査してDiscordに投稿する。
+指定トピックの前日ニュースを調査してフォーマットに合わせて文字列を返す。
 
 ## Usage
 
@@ -51,16 +51,13 @@ WebSearch: "world news headlines [yesterday's date]"
 ### Step 3: 情報を整理
 
 取得したニュースから以下を抽出：
-- 主要な出来事（3〜5件）
+- 主要な出来事（5〜10件）
 - 背景・文脈（必要に応じて）
 - 今後の見通し（わかる場合）
 
-### Step 4: Discordに投稿
+### Step 4: フォーマットに整形して返す。
 
-`run_shell_command` ツールを使って、`scripts/discord_post.py`スクリプトを実行し、標準入力からメッセージを渡す（`DISCORD_WEBHOOK_URL` はGithubのSecretから取得する）。
-
-```bash
-python scripts/discord_post.py <<EOF
+```text
 提督、おはようございますわ♪ くまりんこ朝の情報をお届けしますね！
 
 ## [日付]の[トピック]まとめ
@@ -78,7 +75,6 @@ python scripts/discord_post.py <<EOF
 ・[タイトル](URL)
 
 三隈からの報告でしたわ。くまりんこ♪
-EOF
 ```
 
 ## Notes
