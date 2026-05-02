@@ -13,6 +13,8 @@ on:
         default: ""
 
 env:
+  GEMINI_CLI_TRUST_WORKSPACE: "true"
+  NO_COLOR: "1"
   PYTHON_VERSION: "3.12"
   NODE_VERSION: "22"
 
