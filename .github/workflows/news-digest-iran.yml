@@ -114,6 +114,13 @@ jobs:
           printf '%s' "$DIGEST" > digest.txt
           test -s digest.txt
 
+      - name: Show Digest
+        run: |
+          cat digest.txt
+          echo "## News Digest" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat digest.txt >> $GITHUB_STEP_SUMMARY
+
       - name: Post to Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
