@@ -32,10 +32,16 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          echo "::group::pip install"
+          pip install -r requirements.txt
+          echo "::endgroup::"
 
       - name: Install Gemini CLI
-        run: npm install -g @google/gemini-cli
+        run: |
+          echo "::group::npm install gemini-cli"
+          npm install -g @google/gemini-cli
+          echo "::endgroup::"
 
       - name: Run Gemini CLI (headless) and write digest
         id: gemini
@@ -45,15 +51,50 @@ jobs:
           NEWS_DIGEST_TOPIC: ${{ inputs.topic }}
           NO_COLOR: "1"
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-        run: python scripts/run_gemini_digest.py gemini-out.json
+        run: |
+          echo "::group::Run Gemini Digest Script"
+          python scripts/run_gemini_digest.py gemini-out.json
+          echo "::endgroup::"
 
       - name: Show Digest
+        if: success()
         run: |
-          echo "## News Digest: ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ News Digest: ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           cat digest.txt >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [View Run Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Show Error Summary
+        if: failure()
+        run: |
+          echo "## ❌ Digest Generation Failed: ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "### 📄 gemini-out.json (Raw Output)" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          if [ -f gemini-out.json ]; then
+            cat gemini-out.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "File not found: gemini-out.json" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Debug Logs & Artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: news-digest-${{ inputs.name }}
+          path: |
+            gemini-out.json
+            digest.txt
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Post to Discord
+        if: success()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python scripts/discord_post.py digest.txt

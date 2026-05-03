@@ -25,7 +25,6 @@ def main() -> int:
         return 1
 
     model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash-lite").strip() or "gemini-2.5-flash"
-
     topic = os.environ.get("NEWS_DIGEST_TOPIC", "").strip()
     prompt_cmd = f"/news-digest '{topic}'" if topic else "/news-digest"
 
@@ -39,13 +38,30 @@ def main() -> int:
         "-m",
         model,
     ]
+
+    print(f"--- Configuration ---")
+    print(f"Model: {model}")
+    print(f"Topic: {topic or '(none)'}")
+    print(f"Command: {' '.join(cmd)}")
+    print(f"----------------------")
+
     env = os.environ.copy()
     env.setdefault("NO_COLOR", "1")
 
-    proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=120)
+    is_github = os.environ.get("GITHUB_ACTIONS") == "true"
+    if is_github:
+        print(f"::group::Gemini CLI Output")
+
+    proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=180)
+
+    if is_github:
+        print(f"::endgroup::")
+
     out_path.write_text(proc.stdout, encoding="utf-8")
 
     if proc.returncode != 0:
+        if is_github:
+            print(f"::error::Gemini CLI failed with exit code {proc.returncode}")
         print(proc.stderr or proc.stdout, file=sys.stderr)
         return proc.returncode
 
@@ -56,7 +72,10 @@ def main() -> int:
         return 1
 
     if data.get("error"):
-        print(json.dumps(data["error"], ensure_ascii=False, indent=2), file=sys.stderr)
+        err_msg = json.dumps(data["error"], ensure_ascii=False, indent=2)
+        if is_github:
+            print(f"::error::Gemini API returned error: {data['error'].get('message', 'Unknown error')}")
+        print(err_msg, file=sys.stderr)
         return 1
 
     response = (data.get("response") or "").strip()
