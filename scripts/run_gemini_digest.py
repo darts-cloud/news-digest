@@ -42,7 +42,7 @@ def main() -> int:
     env = os.environ.copy()
     env.setdefault("NO_COLOR", "1")
 
-    proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=600)
+    proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=120)
     out_path.write_text(proc.stdout, encoding="utf-8")
 
     if proc.returncode != 0:
