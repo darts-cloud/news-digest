@@ -8,12 +8,12 @@ on:
       topic:
         description: "トピック"
         required: false
-        default: "Claude Code,Gemini,OpenAI,Codex,Cursor,Github Copilot"
+        default: "ClaudeCode,Gemini,OpenAI,Codex,Cursor,GithubCopilot"
 
 jobs:
   run-digest:
     uses: ./.github/workflows/reusable-news-digest.yml
     with:
       name: "AI関連"
-      topic: ${{ github.event.inputs.topic || 'Claude Code,Gemini,OpenAI,Codex,Cursor,Github Copilot' }}
+      topic: ${{ github.event.inputs.topic || 'ClaudeCode,Gemini,OpenAI,Codex,Cursor,GithubCopilot' }}
     secrets: inherit
