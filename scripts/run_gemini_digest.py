@@ -47,12 +47,29 @@ def main() -> int:
 
     env = os.environ.copy()
     env.setdefault("NO_COLOR", "1")
+    # Node.js / Gemini CLI の内部デバッグログを有効化（ネットワーク等の状態把握用）
+    env.setdefault("DEBUG", "gemini:*,google:*")
 
     is_github = os.environ.get("GITHUB_ACTIONS") == "true"
     if is_github:
         print(f"::group::Gemini CLI Output")
 
-    proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=180)
+    print(f"Gemini CLI 実行開始 (timeout=180s)...")
+    try:
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=sys.stderr, text=True, env=env, timeout=180)
+        print(f"Gemini CLI 実行完了")
+        if proc.stdout:
+            print(proc.stdout)
+    except subprocess.TimeoutExpired as e:
+        if is_github:
+            print(f"::error::Gemini CLI timed out after 180 seconds")
+        print(f"Error: Gemini CLI timed out", file=sys.stderr)
+        
+        # タイムアウト時にバッファに残っていた出力（内部エラー等）を救出
+        if e.stdout:
+            print("\n--- Partial stdout before timeout ---", file=sys.stderr)
+            print(e.stdout, file=sys.stderr)
+        return 1
 
     if is_github:
         print(f"::endgroup::")
