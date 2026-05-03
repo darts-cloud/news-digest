@@ -8,12 +8,12 @@ on:
       topic:
         description: "トピック"
         required: false
-        default: "Claude Code Gemini OpenAI Codex Cursor"
+        default: "Claude,Gemini,OpenAI,Codex,Cursor"
 
 jobs:
   run-digest:
     uses: ./.github/workflows/reusable-news-digest.yml
     with:
       name: "AI関連"
-      topic: ${{ github.event.inputs.topic || 'Claude Code Gemini OpenAI Codex Cursor' }}
+      topic: ${{ github.event.inputs.topic || 'Claude,Gemini,OpenAI,Codex,Cursor' }}
     secrets: inherit
