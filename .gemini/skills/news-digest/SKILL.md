@@ -16,12 +16,12 @@ origin: local
 
 | パラメータ名 | 型 | 説明 |
 | --- | --- | --- |
-| トピック | 文字列 | ニュースを検索するトピック。指定しない場合は主要ニュースをまとめる。 カンマ区切りの場合はOR検索、単語が+で連結されている場合はAND検索を行うこと。スペースは文字として扱うこと。 |
+| トピック | 文字列 | ニュースを検索するトピック。指定しない場合は主要ニュースをまとめる。 カンマ区切りの場合はOR検索、単語が+で連結されている場合はAND検索を行うこと。スペースは指定しないこと。 |
 
 例：
 - `/news-digest 'イラン情勢'`
-- `/news-digest 'Claude Code,Cursor,Copilot '` # OR検索
-- `/news-digest 'Claude Code+Cursor+Copilot '` # AND検索
+- `/news-digest 'ClaudeCode,Cursor,Copilot '` # OR検索
+- `/news-digest 'ClaudeCode+Cursor+Copilot '` # AND検索
 
 引数なしの場合は「本日の主要ニュース」として国際情勢全般をまとめる。
 
