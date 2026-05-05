@@ -15,6 +15,7 @@ env:
   NO_COLOR: "1"
   PYTHON_VERSION: "3.12"
   NODE_VERSION: "22"
+  TZ: "Asia/Tokyo"
 
 jobs:
   digest:
@@ -52,6 +53,9 @@ jobs:
           NO_COLOR: "1"
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         run: |
+          echo "Topic: ${{ inputs.topic }}"
+          echo "Model: ${{ vars.GEMINI_MODEL }}"
+          echo "Date (JST): $(date)"
           echo "::group::Run Gemini Digest Script"
           python scripts/run_gemini_digest.py gemini-out.json
           echo "::endgroup::"

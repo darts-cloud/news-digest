@@ -12,17 +12,18 @@ origin: local
 ## Usage
 
 ```
-/news-digest [トピック]
+/news-digest [トピック] [取得対象日時]
 ```
 
 | パラメータ名 | 型 | 説明 |
 | --- | --- | --- |
 | トピック | 文字列 | ニュースを検索するトピック。指定しない場合は主要ニュースをまとめる。 カンマ区切りの場合はOR検索、単語が+で連結されている場合はAND検索を行うこと。スペースは指定しないこと。 |
+| ニュース取得対象日 (JST) | 日付 | ニュースを取得する対象の日付（日本標準時）。 |
 
 例：
-- `/news-digest 'イラン情勢'`
-- `/news-digest 'ClaudeCode,Cursor,Copilot '` # OR検索
-- `/news-digest 'ClaudeCode+Cursor+Copilot '` # AND検索
+  `/news-digest 'イラン情勢' '2026-05-04'`
+  `/news-digest 'ClaudeCode,Cursor,GithubCopilot' '2026-05-04'` # OR検索
+  `/news-digest 'ClaudeCode+Cursor+GithubCopilot' '2026-05-04'` # AND検索
 
 引数なしの場合は「本日の主要ニュース」として国際情勢全般をまとめる。
 
@@ -35,24 +36,20 @@ origin: local
 ## Workflow
 
 ### Step 1: 日付を確認
-- 前日の日付を特定する（例：今日が4月10日なら前日は4月9日）。
-- JST(日本標準時)を基準とすること
-- UTC(世界標準時)はJSTより9時間遅いことに注意すること。
-  - UTCが0:00〜8:59は当日、9:00〜23:59は前日として、ニュースを取得すること。
-
+- パラメータに指定された日付をニュース取得対象日として使用する。
 ### Step 2: ニュース検索（並列実行）
 
 以下を**同時に**実行：
 
 ```
-WebSearch: "[トピック] [前日の日付 例: 2026年4月9日]"
-WebSearch: "[topic in English] [yesterday's date e.g. April 9 2026]"
+WebSearch: "[トピック] [日付 例: 2026年4月9日]"
+WebSearch: "[topic in English] [date e.g. April 9 2026]"
 ```
 
 トピックが指定されていない場合：
 ```
-WebSearch: "世界主要ニュース [前日日付]"
-WebSearch: "world news headlines [yesterday's date]"
+WebSearch: "世界主要ニュース [日付]"
+WebSearch: "world news headlines [date]"
 ```
 
 ### Step 3: 情報を整理
